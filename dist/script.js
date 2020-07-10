@@ -1867,6 +1867,232 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "./src/js/lib/components/dropdown.js":
+/*!*******************************************!*\
+  !*** ./src/js/lib/components/dropdown.js ***!
+  \*******************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.dropdown = function () {
+  for (let i = 0; i < this.length; i++) {
+    // получаем id кнопки
+    let id = Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).getAttr('id');
+    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).click(() => {
+      // при клике тогглим именно то меню, которое соответсвует кнопке
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(`[data-toggle-id="${id}"]`).fadeToggle(300);
+    });
+  }
+}; // Можно инициализировать прямо здесь, а можно в main.js
+// $('.dropdown-toggle').dropdown();
+
+/***/ }),
+
+/***/ "./src/js/lib/components/modal.js":
+/*!****************************************!*\
+  !*** ./src/js/lib/components/modal.js ***!
+  \****************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
+/* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+
+ // Работа со статическим модальным окном (из верстки)
+
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.modal = function (createdModal) {
+  for (let i = 0; i < this.length; i++) {
+    const modalID = Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(this[i]).getAttr('data-target');
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(this[i]).on('click', e => {
+      e.preventDefault();
+      Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(modalID).fadeIn(500);
+      document.body.style.overflow = 'hidden'; // Проверка на наличие полосы прокрутки
+
+      if (document.body.offsetHeight > document.documentElement.clientHeight) {
+        // console.log('ok');
+        // Отменяем сдвиг элементов страницы при появлении/исчезновении полосы прокрутки
+        let scrollWidth = calcMoveX();
+        document.body.style.marginRight = `${scrollWidth}px`; // сдвиг модального окна (чтоб не дергалось). На половину ширины полосы прокрутки, т.к оно находится в середине
+
+        modalMove(-scrollWidth / 2);
+        document.body.style.marginRight = `${scrollWidth}px`;
+      }
+    });
+
+    let closeModal = selector => {
+      Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(selector).fadeOut(500);
+      document.body.style.overflow = '';
+      document.body.style.marginRight = `0px`;
+      modalMove(); // Если модальное окно было создано динамически (если передан агрумент из метода создания динамической модалки), то оно удаляется из верстки после закрытия
+
+      if (createdModal) {
+        // Если удалить сразу, то пропадет эффект плавного исчезновения
+        setTimeout(() => {
+          document.querySelector(selector).remove();
+        }, 1000);
+        createdModal = null;
+      }
+    }; // Закрытие при клике на кристик
+
+
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(`${modalID} [data-close]`).click(() => {
+      closeModal(`${modalID}`);
+    }); // Закрытие при клике вне модального окна
+
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])('.modal').click(e => {
+      if (e.target.classList.contains('modal')) {
+        closeModal(`${modalID}`);
+      }
+    });
+  } // Определение шиирны полосы прокрутки
+
+
+  function calcMoveX() {
+    let elem = document.createElement('div');
+    elem.style.cssText = `
+            width: 50px;
+            height: 50px;
+            visibility: hidden;
+            overflow-y: scroll;
+        `;
+    document.body.append(elem);
+    let scrollWidth = elem.offsetWidth - elem.clientWidth;
+    elem.remove();
+    return scrollWidth;
+  } // сдвиг модального окна (чтоб не дергалось при появлении/исчезновении полосы прокрутки)
+  // одно из окон все равно сдвигается после первого закрывания (надо потом разобраться =)
+
+
+  function modalMove(move) {
+    if (!move) {
+      document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.transform = `TranslateX(0px)`;
+      });
+    } else {
+      document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.transform = `TranslateX(${move}px)`;
+      });
+    }
+  }
+}; // Инициализация запуска модальных окон
+
+
+Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])('[data-toggle="modal"]').modal();
+
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.createModal = function ({
+  text,
+  btns
+} = {}) {
+  for (let i = 0; i < this.length; i++) {
+    // Техническая переменная, которая означает, что окно создано динамически (в конце передается в метод создания статического окна, чтоб удилить его из верстки после закрытия)
+    let createdModal = true; // создаем обертку модального окна
+
+    let modal = document.createElement('div');
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(modal).addClass('modal'); // задаем модальному окну ID, соответстующий дата-атрубуту триггера (удаляем #)
+
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(modal).setAttr('id', Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(this[i]).getAttr('data-target').slice(1)); // Создаем кнопки (все данные о них задаются в настройках метода)
+
+    const buttons = [];
+
+    for (let j = 0; j < btns.count; j++) {
+      let btn = document.createElement('button'); // список классов будет считываться из настроек. j - порядковый номер кнопки, 1 - classNames в настройках
+
+      Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(btn).addClass('btn', ...btns.settings[j][1]);
+      btn.textContent = btns.settings[j][0];
+
+      if (btns.settings[j][2]) {
+        Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(btn).setAttr('data-close', 'true');
+      }
+
+      if (btns.settings[j][3] && typeof btns.settings[j][3] === 'function') {
+        Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(btn).on('click', btns.settings[j][3]);
+      }
+
+      buttons.push(btn);
+    } // внутренняя структура модального окна
+
+
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(modal).html(`
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <button class="close" data-close>
+                        <span>&times;</span>
+                    </button>
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            ${text.title}
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        ${text.body}
+                    </div>
+                    <div class="modal-footer">
+                        
+                    </div>
+                </div>
+            </div>
+        `); // Помещаем массив кнопок (развернутый при помощи spread-оператора) в футер
+
+    modal.querySelector('.modal-footer').append(...buttons); // помещаем модальное окно на страницу
+
+    document.body.appendChild(modal); // Инициализируем при помощи метода для статической верстки
+
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(this[i]).modal(createdModal); // Сразу же отображаем модальное окно
+
+    Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_core__WEBPACK_IMPORTED_MODULE_1__["default"])(this[i]).getAttr('data-target')).fadeIn(500);
+  }
+};
+
+/***/ }),
+
+/***/ "./src/js/lib/components/tabs.js":
+/*!***************************************!*\
+  !*** ./src/js/lib/components/tabs.js ***!
+  \***************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+ // $.prototype.tabs = function() {
+//     for (let i = 0; i < this.length; i++) {
+//         const tabPanel = $(this[i]).find('[data-tabpanel]'),
+//         tabTriggers = tabPanel.find('.tab-item'),
+//         tabContent = $(this[i]).find('.tab-content');
+//         for (let j = 0; j < tabTriggers.length; j++) {
+//             $(tabTriggers[j]).on('click', () => {
+//                 for (let k = 0; k < tabContent.length; k++) {
+//                     $(tabContent[k]).removeClass('tab-content--active');
+//                     $(tabTriggers[k]).removeClass('tab-item--active');
+//                 }
+//                 $(tabContent[j]).addClass('tab-content--active');
+//                 $(tabTriggers[j]).addClass('tab-item--active');
+//             });
+//         }
+//     }
+// };
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.tabs = function () {
+  for (let i = 0; i < this.length; i++) {
+    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).on('click', () => {
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).addClass('tab-item--active').siblings().removeClass('tab-item--active').closest('.tab').find('.tab-content').removeClass('tab-content--active').eq(Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).index()).addClass('tab-content--active');
+    });
+  }
+};
+
+Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('[data-tabpanel] .tab-item').tabs();
+
+/***/ }),
+
 /***/ "./src/js/lib/core.js":
 /*!****************************!*\
   !*** ./src/js/lib/core.js ***!
@@ -1947,8 +2173,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./core */ "./src/js/lib/core.js");
 /* harmony import */ var _modules_display__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/display */ "./src/js/lib/modules/display.js");
 /* harmony import */ var _modules_classes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/classes */ "./src/js/lib/modules/classes.js");
-/* harmony import */ var _modules_actions__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/actions */ "./src/js/lib/modules/actions.js");
+/* harmony import */ var _modules_handlers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/handlers */ "./src/js/lib/modules/handlers.js");
+/* harmony import */ var _modules_attributes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/attributes */ "./src/js/lib/modules/attributes.js");
+/* harmony import */ var _modules_actions__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/actions */ "./src/js/lib/modules/actions.js");
+/* harmony import */ var _modules_effects__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/effects */ "./src/js/lib/modules/effects.js");
+/* harmony import */ var _components_dropdown__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/dropdown */ "./src/js/lib/components/dropdown.js");
+/* harmony import */ var _components_modal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/modal */ "./src/js/lib/components/modal.js");
+/* harmony import */ var _components_tabs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/tabs */ "./src/js/lib/components/tabs.js");
 // В этом файле функция $ бует обогащаться различными методами. $ импортируется из core.js, а методы из других файлов. Потом $ со всеми методами экспортируется
+
+
+
+
+
+
 
 
 
@@ -1966,41 +2204,211 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+/* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
+/* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
 
+ // Если что-то передано, то это записывается внутрь элемента в виде HTML. Если ничего не передано, то получаем контент внутри элемента
 
-_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.on = function (eventName, callback) {
-  if (!eventName || !callback) {
-    return this;
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.html = function (content) {
+  for (let i = 0; i < this.length; i++) {
+    if (content) {
+      this[i].innerHTML = content;
+    } else {
+      return this[i].innerHTML;
+    }
   }
 
+  return this;
+}; // Получаем конкретный элемент по его номеру
+
+
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.eq = function (i) {
+  // Нам требуется очистить объект this от всех свойств, кроме того, которое нас интересует
+  const swap = this[i]; // получаем количество всех свойств объекта (у него кроме всех элементов могут быть еще длина и т.д.)
+
+  const objLength = Object.keys(this).length; // полностью очищаем объект
+
+  for (let i = 0; i < objLength; i++) {
+    delete this[i];
+  } // формируем объект из нашего элемента
+
+
+  this[0] = swap;
+  this.length = 1;
+  return this;
+}; // Возвращает порядковый номер элемента относительно его родителя
+
+
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.index = function () {
+  const parent = this[0].parentNode; // для того, чтобы далее работал метод findIndex, преобразуем HTML коллекцию дочерних элементов в массив
+
+  const childs = [...parent.children]; // функция возвращает искомый элемент
+
+  const findMyIndex = item => {
+    return item == this[0];
+  }; // получаем номер требуемого элемента
+
+
+  return childs.findIndex(findMyIndex);
+}; // Поиск элементов по требуемому селектору (внутри указанного элемента)
+
+
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.find = function (selector) {
+  let numberOfItems = 0,
+      counter = 0; // создаем поверхностную копию объекта
+
+  const copyObj = Object.assign({}, this); // по всему объекту ищем элементы с требуемым селектором и записываем их в arr
+
+  for (let i = 0; i < copyObj.length; i++) {
+    const arr = copyObj[i].querySelectorAll(selector);
+
+    if (arr.length == 0) {
+      continue;
+    } // записываем найденные элементы в объект (т.е. перезаписываем то, что в нем уже содержится)
+
+
+    for (let j = 0; j < arr.length; j++) {
+      this[counter] = arr[j];
+      counter++;
+    }
+
+    numberOfItems += arr.length;
+  }
+
+  this.length = numberOfItems; // После перезаписи элементов в объекте, в нем может остаться "хвост" из старых элементов. Их надо удалить
+  // получаем количество всех свойств объекта (у него кроме всех элементов могут быть еще длина и т.д.)
+
+  const objLength = Object.keys(this).length; // удаляем все свойства с номерами от numberOfItems
+
+  for (; numberOfItems < objLength; numberOfItems++) {
+    delete this[numberOfItems];
+  }
+
+  return this;
+}; // Поиск ближайшего блока по заданному селектору. Аналог closest, но этот метод ищет closest для всех записанных в this элементов
+
+
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.closest = function (selector) {
+  // подсчет количества найденных элементов
+  let counter = 0; // для каждого свойства (элемента) находим closest и записываем в объект
+
   for (let i = 0; i < this.length; i++) {
-    this[i].addEventListener(eventName, callback);
+    // если элемент не найден, то будет записано null. Тогда может возникнуть ошибка, если далее назначить элементу class или еще что. Чтобы этого избежать, ставим условие
+    if (this[i].closest(selector) === null) {
+      return this;
+    } else {
+      this[i] = this[i].closest(selector);
+      counter++;
+    }
+  }
+
+  const objLength = Object.keys(this).length; // удаляем все свойства с номерами от counter (т.е. те, которые не используют метод .closest)
+
+  for (; counter < objLength; counter++) {
+    delete this[counter];
+  }
+
+  return this;
+}; // Поиск всех соседних элементов внутри родителя, не включая сам элемент
+
+
+_core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.siblings = function () {
+  let numberOfItems = 0,
+      counter = 0; // создаем поверхностную копию объекта
+
+  const copyObj = Object.assign({}, this); // по всему объекту ищем детей родительского элемента
+
+  for (let i = 0; i < copyObj.length; i++) {
+    const arr = copyObj[i].parentNode.children; // записываем найденные элементы в объект (т.е. перезаписываем то, что в нем уже содержится)
+
+    for (let j = 0; j < arr.length; j++) {
+      // удаляем элемент, относительно которого производим поиск (он в выборку не влкючается)
+      if (copyObj[i] === arr[j]) {
+        continue;
+      }
+
+      this[counter] = arr[j];
+      counter++;
+    } // общее количество на 1 меньше, т.к. вычли сам элемент, на котором производим поиск
+
+
+    numberOfItems += arr.length - 1;
+  }
+
+  this.length = numberOfItems; // После перезаписи элементов в объекте, в нем может остаться "хвост" из старых элементов. Их надо удалить
+  // получаем количество всех свойств объекта (у него кроме всех элементов могут быть еще длина и т.д.)
+
+  const objLength = Object.keys(this).length; // удаляем все свойства с номерами от numberOfItems
+
+  for (; numberOfItems < objLength; numberOfItems++) {
+    delete this[numberOfItems];
   }
 
   return this;
 };
 
-_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.off = function (eventName, callback) {
-  if (!eventName || !callback) {
-    return this;
-  }
+/***/ }),
 
+/***/ "./src/js/lib/modules/attributes.js":
+/*!******************************************!*\
+  !*** ./src/js/lib/modules/attributes.js ***!
+  \******************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.setAttr = function (attrName, attrValue) {
   for (let i = 0; i < this.length; i++) {
-    this[i].removeEventListener(eventName, callback);
+    if (!this[i].setAttribute) {
+      continue;
+    }
+
+    this[i].setAttribute(attrName, attrValue);
   }
 
   return this;
-}; // Если действие передано, то оно выполняется при клике. Если нет, то просто выполняется виртуальный клик.
+};
 
-
-_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.click = function (handler) {
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.removeAttr = function (attrName) {
   for (let i = 0; i < this.length; i++) {
-    if (handler) {
-      this[i].addEventListener('click', handler);
-    } else {
-      this[i].click();
+    if (!this[i].removeAttribute) {
+      continue;
     }
+
+    this[i].removeAttribute(attrName);
+  }
+
+  return this;
+};
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.toggleAttr = function (attrName) {
+  for (let i = 0; i < this.length; i++) {
+    if (!this[i].hasAttribute) {
+      continue;
+    }
+
+    if (this[i].hasAttribute(attrName)) {
+      this[i].removeAttribute(attrName);
+    } else {
+      this[i].setAttribute(attrName, '');
+    }
+  }
+
+  return this;
+};
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.getAttr = function (attrName) {
+  for (let i = 0; i < this.length; i++) {
+    if (!this[i].getAttribute) {
+      continue;
+    }
+
+    return this[i].getAttribute(attrName);
   }
 
   return this;
@@ -2080,7 +2488,7 @@ _core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.show = function () {
       continue;
     }
 
-    this[i].style.display = '';
+    this[i].style.display = 'block';
   }
 
   return this;
@@ -2116,6 +2524,176 @@ _core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.toggle = function () {
 
 /***/ }),
 
+/***/ "./src/js/lib/modules/effects.js":
+/*!***************************************!*\
+  !*** ./src/js/lib/modules/effects.js ***!
+  \***************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+ // Запуск анимации. Аргументы: длительность; колбэк, который сработает после запуска анимации; функция, которая запустится после того, как анимация отработала. Аргументы необязательные
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.animateOverTime = function (dur, cb, fin) {
+  let timeStart; // техническая функция. Будет запускаться через интервал времени, который определяет браузер
+
+  function _animateOverTime(time) {
+    // При первом запуске функции в timeStart будет записано первое значение time
+    if (!timeStart) {
+      timeStart = time;
+    } // Прошедшее время с каждым новым запуском функции будет увеличиваться
+
+
+    let timeElapsed = time - timeStart; // Для анимации будет использоваться Opacity. Ее значение от 0 до 1. Со временем значение complection будет расти как раз от 0 до 1. Можно будет использовать другие параметры, для которых требуется изменение со временем (размер, смещение и т.д.)
+
+    let complection = Math.min(timeElapsed / dur, 1);
+    cb(complection); // анимация продолжается до достижения времени dur. По окончании анимации запускается функция fin (необязательная)
+
+    if (timeElapsed < dur) {
+      requestAnimationFrame(_animateOverTime);
+    } else {
+      if (typeof fin === 'function') {
+        fin();
+      }
+    }
+  }
+
+  return _animateOverTime;
+}; // Анимация появления элемента
+
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.fadeIn = function (dur, display, fin) {
+  for (let i = 0; i < this.length; i++) {
+    // Для начала покажем объект (по-умолчанию block)
+    this[i].style.display = display || 'block'; // техническая функция, меняющая прозрачность на основе complection
+
+    const _fadeIn = complection => {
+      this[i].style.opacity = complection;
+    }; // запуск анимации на основе функции animateOverTime
+
+
+    const ani = this.animateOverTime(dur, _fadeIn, fin);
+    requestAnimationFrame(ani);
+  }
+
+  return this;
+}; // Анимация скрытия элемента
+
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.fadeOut = function (dur, fin) {
+  for (let i = 0; i < this.length; i++) {
+    // техническая функция, меняющая прозрачность на основе complection
+    const _fadeOut = complection => {
+      this[i].style.opacity = 1 - complection; // в итоге полностью скрываем элемент
+
+      if (complection === 1) {
+        this[i].style.display = 'none';
+      }
+    }; // запуск анимации на основе функции animateOverTime
+
+
+    const ani = this.animateOverTime(dur, _fadeOut, fin);
+    requestAnimationFrame(ani);
+  }
+
+  return this;
+}; // Вариант Петриченко
+// $.prototype.fadeToggle = function(dur, display, fin) {
+//     for (let i = 0; i < this.length; i++) {
+//         if (window.getComputedStyle(this[i]).display === 'none') {
+//             // далее копия метода fadeIn
+//             this[i].style.display = display || 'block';
+//             const _fadeIn = (complection) => {
+//                 this[i].style.opacity = complection;
+//             };
+//             const ani = this.animateOverTime(dur, _fadeIn, fin);
+//             requestAnimationFrame(ani);
+//         } else {
+//             // копия метода fadeOut
+//             const _fadeOut = (complection) => {
+//                 this[i].style.opacity = 1 - complection;
+//                 if (complection === 1) {
+//                     this[i].style.display = 'none';
+//                 }
+//             };
+//             const ani = this.animateOverTime(dur, _fadeOut, fin);
+//             requestAnimationFrame(ani); 
+//         }
+//     }
+//     return this;
+// };
+// Мой вариант
+
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.fadeToggle = function (dur, display, fin) {
+  for (let i = 0; i < this.length; i++) {
+    let disp = getComputedStyle(this[i]).getPropertyValue('display');
+
+    if (disp == 'none') {
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).fadeIn(dur, display, fin);
+    } else {
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).fadeOut(dur, fin);
+    }
+  }
+
+  return this;
+};
+
+/***/ }),
+
+/***/ "./src/js/lib/modules/handlers.js":
+/*!****************************************!*\
+  !*** ./src/js/lib/modules/handlers.js ***!
+  \****************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.on = function (eventName, callback) {
+  if (!eventName || !callback) {
+    return this;
+  }
+
+  for (let i = 0; i < this.length; i++) {
+    this[i].addEventListener(eventName, callback);
+  }
+
+  return this;
+};
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.off = function (eventName, callback) {
+  if (!eventName || !callback) {
+    return this;
+  }
+
+  for (let i = 0; i < this.length; i++) {
+    this[i].removeEventListener(eventName, callback);
+  }
+
+  return this;
+}; // Если действие передано, то оно выполняется при клике. Если нет, то просто выполняется виртуальный клик.
+
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.click = function (handler) {
+  for (let i = 0; i < this.length; i++) {
+    if (handler) {
+      this[i].addEventListener('click', handler);
+    } else {
+      this[i].click();
+    }
+  }
+
+  return this;
+};
+
+/***/ }),
+
 /***/ "./src/js/main.js":
 /*!************************!*\
   !*** ./src/js/main.js ***!
@@ -2127,10 +2705,72 @@ _core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.toggle = function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lib_lib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lib/lib */ "./src/js/lib/lib.js");
 
+ // Примеры использования созданных методов:
+// $('button').addClass('on');
+// $('button').removeClass('on');
+// $('button').toggleClass('on');
+// $('button').setAttr('number', 'one');
+// $('button').removeAttr('number');
+// console.log($('button').getAttr('number'));
+// $('button').toggleAttr('number');
+// $('button').hide();
+// $('button').show();
+// $('button').toggle();
+// $('button').on('click', function() {
+//     $('div').eq(2).toggleClass('active');
+// });
+// $('button').off('click', function() {
+//     $('div').eq(2).toggleClass('active');
+// });
+// $('div').click(function() {
+//     console.log($(this).index());
+// });
+// $('button').html('Hello');
+// // console.log($('div').eq(2).find('.some'));
+// // console.log($('.some').closest(".find_me").addClass('sdfsdf'));
+// // console.log($('.more').eq(0).siblings());
+// // console.log($('.find_me').siblings());
+// $('button').fadeIn(1800);
+// Работа со страницей (после создания библиотеки CSS-классов)
 
-Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('button').on('click', function () {
-  Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])(this).toggleClass('active');
+Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('#first').on('click', () => {
+  Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('div').eq(1).fadeOut(800);
+}); // $('[data-count="second"]').on('click', () => {
+//     $('div').eq(2).fadeOut(800);
+// });
+
+Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('[data-count="second"]').on('click', () => {
+  Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('div').eq(2).fadeToggle(800);
 });
+Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('button').eq(2).on('click', () => {
+  Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('.w-500').fadeToggle(800);
+}); // Инициализация выпдающего меню при статической верстке (Петриченко инициализирует прямо в components)
+// $('.dropdown-toggle').dropdown();
+// Инициализация выпдающего меню при динамической верстке
+
+Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('.wrap').html(`<div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" id="dropdownMenuButton">Dropdown button</button>
+    <div class="dropdown-menu" data-toggle-id="dropdownMenuButton">
+        <a href="#" class="dropdown-item">Action</a>
+        <a href="#" class="dropdown-item">Action2</a>
+        <a href="#" class="dropdown-item">Action3</a>
+    </div>
+    </div>`); // Инициализация, примененная для статичной верстки не сработает, т.к. скрипт отработает еще до того, как динамичнеская верстка сформируется. Поэтому запускаем еще раз
+
+Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('.dropdown-toggle').dropdown(); // Инициализация динамического модального окна
+
+Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('#trigger').click(() => Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('#trigger').createModal({
+  text: {
+    title: "Modal title",
+    body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit assumenda consequuntur ducimus eum numquam iure cumque atque quasi impedit. Repellendus, voluptate! Similique doloribus voluptate mollitia temporibus assumenda impedit aut architecto."
+  },
+  btns: {
+    count: 2,
+    settings: [["Close", ['btn-danger', 'mr-10'], true], ['Save changes', ['btn-success'], false, () => {
+      alert('Данные сохранены');
+    }]]
+  }
+}));
 
 /***/ })
 
