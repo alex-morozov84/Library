@@ -2063,7 +2063,8 @@ _core__WEBPACK_IMPORTED_MODULE_1__["default"].prototype.createModal = function (
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
- // $.prototype.tabs = function() {
+ // Мой вариант:
+// $.prototype.tabs = function() {
 //     for (let i = 0; i < this.length; i++) {
 //         const tabPanel = $(this[i]).find('[data-tabpanel]'),
 //         tabTriggers = tabPanel.find('.tab-item'),
@@ -2080,11 +2081,27 @@ __webpack_require__.r(__webpack_exports__);
 //         }
 //     }
 // };
+// Вариант Петриченко:
+// $.prototype.tabs = function() {
+//     for (let i = 0; i < this.length; i++) {
+//         $(this[i]).on('click', () => {
+//             $(this[i])
+//                 .addClass('tab-item--active')
+//                 .siblings()
+//                 .removeClass('tab-item--active')
+//                 .closest('.tab')
+//                 .find('.tab-content')
+//                 .removeClass('tab-content--active')
+//                 .eq($(this[i]).index())
+//                 .addClass('tab-content--active');
+//         });
+//     }
+// };
 
 _core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.tabs = function () {
   for (let i = 0; i < this.length; i++) {
     Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).on('click', () => {
-      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).addClass('tab-item--active').siblings().removeClass('tab-item--active').closest('.tab').find('.tab-content').removeClass('tab-content--active').eq(Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).index()).addClass('tab-content--active');
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).addClass('tab-item--active').siblings().removeClass('tab-item--active').closest('.tab').find('.tab-content').removeClass('tab-content--active').eq(Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).index()).addClass('tab-content--active', 'fadeIn');
     });
   }
 };
