@@ -88,7 +88,7 @@ $.prototype.modal = function(createdModal) {
 $('[data-toggle="modal"]').modal();
 
 
-
+// Создание динамического модального окна
 $.prototype.createModal = function({text, btns} = {}) {
     for (let i = 0; i < this.length; i++) {
 
